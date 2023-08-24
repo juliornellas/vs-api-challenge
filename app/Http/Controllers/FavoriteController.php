@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Http\Requests\CreateFavoriteRequest;
+use App\Http\Resources\FavoriteResource;
+use App\Models\Favorite;
+use App\Models\User;
 use Illuminate\Http\Response;
 
 /**
@@ -20,19 +23,40 @@ class FavoriteController extends Controller
         return FavoriteResource::collection($favorites);
     }
 
-    public function store(CreateFavoriteRequest $request, Post $post)
+    public function storeOrDestroyFavoritePost(Request $request, Post $post)
     {
-        $request->user()->favorites()->create(['post_id' => $post->id]);
+        $favorite = Favorite::where([
+            ['user_id', $request->user()->id],
+            ['favorite_id', $post->id],
+            ['favorite_type', 'App\Models\Post']
+            ])->first();
 
-        return response()->noContent(Response::HTTP_CREATED);
+        //Like or Dislike POST
+        if($favorite){
+            $favorite->delete();
+            return response()->noContent();
+        }else{
+            $post->favorites()->create(['post_id' => $post->id, 'user_id' => $request->user()->id]);
+            return response()->noContent(Response::HTTP_CREATED);
+        }
     }
 
-    public function destroy(Request $request, Post $post)
+    public function storeOrDestroyFavoriteUser(Request $request, User $user)
     {
-        $favorite = $request->user()->favorites()->where('post_id', $post->id)->firstOrFail();
+        $favorite = Favorite::where([
+            ['user_id', $request->user()->id],
+            ['favorite_id', $user->id],
+            ['favorite_type', 'App\Models\User']
+            ])->first();
 
-        $favorite->delete();
-
-        return response()->noContent();
+        //Follow or Unfollow User
+        if($favorite){
+            $favorite->delete();
+            return response()->noContent();
+        }else{
+            $user->favorites()->create(['post_id' => 0, 'user_id' => $request->user()->id]);
+            return response()->noContent(Response::HTTP_CREATED);
+        }
     }
+
 }

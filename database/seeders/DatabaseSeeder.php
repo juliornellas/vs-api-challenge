@@ -19,6 +19,14 @@ class DatabaseSeeder extends Seeder
                 'password' => \Hash::make('admin'),
             ]);
 
+        // Adding a manager user
+        $user2 = \App\Models\User::factory()
+        ->count(1)
+        ->create([
+            'email' => 'manager@admin.com',
+            'password' => \Hash::make('manager'),
+        ]);
+
         $this->call(FavoriteSeeder::class);
         $this->call(PostSeeder::class);
         $this->call(UserSeeder::class);
