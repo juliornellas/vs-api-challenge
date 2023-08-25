@@ -7,6 +7,9 @@ use App\Models\Post;
 use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Requests\DestroyPostRequest;
+use App\Jobs\SendEmailJob;
+use App\Models\Favorite;
+use App\Models\User;
 
 /**
  * @group Posts
@@ -31,6 +34,22 @@ class PostController extends Controller
             'body' => $request->input('body'),
             'user_id' => $user->id,
         ]);
+
+        $followers = Favorite::where('favorite_type', 'App\Models\User')->where('favorite_id', $post->user_id)->get();
+
+        foreach ($followers as $follow) {
+            $user = User::find($follow->user_id);
+
+            $data = [
+                'title' => $post->title,
+                'body' => $post->body,
+                'name' => $user->name,
+                'email' => $user->email,
+                // 'email' => 'juliornellas@gmail.com',
+            ];
+
+            SendEmailJob::dispatch($data);
+        }
 
         return new PostResource($post);
     }

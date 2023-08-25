@@ -1,5 +1,7 @@
 <?php
 
+use App\Jobs\SendEmailJob;
+use App\Mail\NewPostFromFavoriteUserMail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +17,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+//Testing send email
+Route::get('/testing', function(){
+    $data = [
+        'title' => 'The Title One',
+        'body' => 'The Body One',
+        'name' => 'Julio',
+        'email' => 'juliornellas@gmail.com',
+    ];
+
+    SendEmailJob::dispatch($data);
+    // Mail::send(new NewPostFromFavoriteUserMail($data));
 });
