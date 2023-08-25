@@ -67,14 +67,19 @@ class FavoriteController extends Controller
 
     public function storeOrDestroyFavoriteUser(Request $request, User $user)
     {
+        //Not able to favorite himself
+        if($request->user()->id === $user->id){
+            return response()->noContent();
+        }
+
         $favorite = Favorite::where([
             ['user_id', $request->user()->id],
             ['favorite_id', $user->id],
             ['favorite_type', 'App\Models\User']
             ])->first();
 
-        //Follow or Unfollow User
-        if($favorite){
+        //Follow or Unfollow User and check owner
+        if($favorite && $favorite->user_id === $request->user()->id){
             $favorite->delete();
             return response()->noContent();
         }else{
