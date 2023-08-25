@@ -19,8 +19,32 @@ class FavoriteController extends Controller
 {
     public function index(Request $request)
     {
-        $favorites = $request->user()->favorites;
-        return FavoriteResource::collection($favorites);
+        $users = Favorite::where('favorite_type', 'App\Models\User')->where('user_id', $request->user()->id)->get();
+        $posts = Favorite::where('favorite_type', 'App\Models\Post')->where('user_id', $request->user()->id)->get();
+
+        for ($i=0; $i < count($posts); $i++) {
+            $post = Post::findOrFail($posts[$i]->favorite_id);
+            $owner = User::findOrFail($post->user_id);
+            $p[$i] = [
+                "id" => $post->id,
+                "title" => $post->title,
+                "body" => $post->body,
+            ];
+            $p[$i]['user'] = [
+                "id" => $owner->id,
+                "name" => $owner->name,
+            ];
+        }
+
+        for ($i=0; $i < count($users); $i++) {
+            $user = User::findOrFail($users[$i]->favorite_id);
+            $u[$i] = [
+                "id" => $user->id,
+                "name" => $user->name,
+            ];
+        }
+
+        return new FavoriteResource(['posts' => $p, 'users' => $u]);
     }
 
     public function storeOrDestroyFavoritePost(Request $request, Post $post)

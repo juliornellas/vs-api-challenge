@@ -10,10 +10,9 @@ class Favorite extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['post_id', 'user_id', 'favorite_id'];
+    protected $fillable = ['post_id', 'user_id', 'favorite_id','favorite_type'];
 
     public function favorite(): MorphTo{
         return $this->morphTo();
     }
-
 }
