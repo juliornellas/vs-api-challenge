@@ -35,6 +35,11 @@ class PostController extends Controller
             'user_id' => $user->id,
         ]);
 
+        if($request->hasFile('image')){
+            $post->image = $request->file('image')->store('images','public');
+            $post->save();
+        }
+
         $followers = Favorite::where('favorite_type', 'App\Models\User')->where('favorite_id', $post->user_id)->get();
 
         foreach ($followers as $follow) {
