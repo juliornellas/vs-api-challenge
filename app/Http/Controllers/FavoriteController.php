@@ -78,10 +78,15 @@ class FavoriteController extends Controller
             ['favorite_type', 'App\Models\User']
             ])->first();
 
-        //Follow or Unfollow User and check owner
-        if($favorite && $favorite->user_id === $request->user()->id){
+
+        //Follow or Unfollow User
+        if($favorite){
+            // Check owner
+            $this->authorize('store', $favorite);
+
             $favorite->delete();
             return response()->noContent();
+
         }else{
             $user->favorites()->create(['post_id' => 0, 'user_id' => $request->user()->id]);
             return response()->noContent(Response::HTTP_CREATED);
