@@ -10,6 +10,8 @@ use App\Http\Requests\DestroyPostRequest;
 use App\Jobs\SendEmailJob;
 use App\Models\Favorite;
 use App\Models\User;
+use Illuminate\Http\Request;
+
 
 /**
  * @group Posts
@@ -24,21 +26,18 @@ class PostController extends Controller
         return PostResource::collection($posts);
     }
 
-    public function store(CreatePostRequest $request)
+    public function store(Request $request)
     {
         $user = $request->user();
 
-        // Create a new post
-        $post = Post::create([
-            'title' => $request->input('title'),
-            'body' => $request->input('body'),
-            'user_id' => $user->id,
-        ]);
+        $formFields = $request->all();
+        $formFields['user_id'] = $user->id;
 
         if($request->hasFile('image')){
-            $post->image = $request->file('image')->store('images','public');
-            $post->save();
+            $formFields['image'] = $request->file('image')->store('images','public');
         }
+
+        $post = Post::create($formFields);
 
         $followers = Favorite::where('favorite_type', 'App\Models\User')->where('favorite_id', $post->user_id)->get();
 
